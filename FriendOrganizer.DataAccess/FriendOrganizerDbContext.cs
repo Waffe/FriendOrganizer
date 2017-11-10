@@ -1,10 +1,11 @@
 ﻿using System.Data.Entity;
+using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using FriendOrganizer.Model;
 
 namespace FriendOrganizer.DataAccess
 {
-    class FriendOrganizerDbContext : DbContext
+    public class FriendOrganizerDbContext : DbContext
     {
         public FriendOrganizerDbContext():base("FriendsOrganizerDb")
         {
@@ -20,4 +21,6 @@ namespace FriendOrganizer.DataAccess
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
         }
     }
+
+
 }
