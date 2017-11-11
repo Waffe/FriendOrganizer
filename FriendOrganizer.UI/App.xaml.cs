@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using Autofac;
 using FriendOrganizer.UI.Data;
 using FriendOrganizer.UI.Startup;
@@ -23,6 +24,14 @@ namespace FriendOrganizer.UI
             var contrainer = bootstrapper.Bootstrap();
             var mainWindow = contrainer.Resolve<MainWindow>();
             mainWindow.Show();
+        }
+
+        private void App_OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            MessageBox.Show(
+                "Unexptected error occured. please ingorm the admin." + Environment.NewLine + e.Exception.Message,
+                "Unexpected error");
+            e.Handled = true;
         }
     }
 }
