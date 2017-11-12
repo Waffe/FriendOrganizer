@@ -17,24 +17,30 @@ namespace FriendOrganizer.UI.ViewModel
 {
     class FriendDetailViewModel : ViewModelBase, IFriendDetailViewModel
     {
-        private IFriendDataService _dataService;
+        private IFriendRepository _friendRepository;
         private IEventAggregator _eventAggrigator;
         private FriendWrapper _friend;
+        private bool _hasChanges;
 
-        public FriendDetailViewModel(IFriendDataService dataService, IEventAggregator eventAggregator)
+        public FriendDetailViewModel(IFriendRepository friendRepository, IEventAggregator eventAggregator)
         {
-            _dataService = dataService;
+            _friendRepository = friendRepository;
             _eventAggrigator = eventAggregator;
-            _eventAggrigator.GetEvent<OpenFriendDetailViewEvent>().Subscribe(OnOpenFriendDetailView);
+            
 
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
         }
         public async Task LoadAsync(int friendId)
         {
-            var friend = await _dataService.GetByIdAsync(friendId);
+            var friend = await _friendRepository.GetByIdAsync(friendId);
+
             Friend = new FriendWrapper(friend);
             Friend.PropertyChanged += (s, e) =>
             {
+                if (!HasChanges)
+                {
+                    HasChanges = _friendRepository.HasChanges();
+                }
                 if (e.PropertyName == nameof(Friend.HasErrors))
                 {
                     ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
@@ -57,7 +63,8 @@ namespace FriendOrganizer.UI.ViewModel
 
         private async void OnSaveExecute()
         {
-            await _dataService.SaveAsync(Friend.Model);
+            await _friendRepository.SaveAsync();
+            HasChanges = _friendRepository.HasChanges();
             _eventAggrigator.GetEvent<AfterFriendSaveEvent>().Publish(new AfterFriendSavedEventArgs()
             {
                 Id = Friend.Id,
@@ -65,15 +72,26 @@ namespace FriendOrganizer.UI.ViewModel
             });
         }
 
-        private bool OnSaveCanExecute()
+        
+
+        public bool HasChanges
         {
-            //TODO : CHeck in addition if feinds has changes
-            return Friend!= null && !Friend.HasErrors;
+            get { return _hasChanges; }
+            set
+            {
+                if (_hasChanges != value)
+                {
+                    _hasChanges = value;
+                    OnPropertyChanged();
+                    ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+                }               
+            }
         }
 
-        private async void OnOpenFriendDetailView(int friendId)
+
+        private bool OnSaveCanExecute()
         {
-            await LoadAsync(friendId);
+            return Friend!= null && !Friend.HasErrors && HasChanges;
         }
 
 
