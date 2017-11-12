@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
@@ -8,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using FriendOrganizer.Model;
 using FriendOrganizer.UI.Data;
+using FriendOrganizer.UI.Data.Lookups;
 using FriendOrganizer.UI.Event;
 using FriendOrganizer.UI.View.Services;
 using FriendOrganizer.UI.Wrapper;
@@ -24,22 +26,33 @@ namespace FriendOrganizer.UI.ViewModel
         private FriendWrapper _friend;
         private bool _hasChanges;
         private IMessageDialogService _messageDialogService;
+        private IProgrammingLanguageLookupDataService _programmingLanguageLookupDataService;
 
-        public FriendDetailViewModel(IFriendRepository friendRepository, IEventAggregator eventAggregator, IMessageDialogService messageDialogService)
+        public FriendDetailViewModel(IFriendRepository friendRepository, IEventAggregator eventAggregator, IMessageDialogService messageDialogService,
+            IProgrammingLanguageLookupDataService programmingLanguageLookupDataService)
         {
             _friendRepository = friendRepository;
             _eventAggrigator = eventAggregator;
             _messageDialogService = messageDialogService;
+            _programmingLanguageLookupDataService = programmingLanguageLookupDataService;
 
 
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
             DeleteCommand = new DelegateCommand(OnDeleteExecute);
+
+            ProgrammingLanguages = new ObservableCollection<LookupItem>();
         }
 
-
+        public ObservableCollection<LookupItem> ProgrammingLanguages { get; }
 
 
         public async Task LoadAsync(int? friendId)
+        {
+            await InitializeFriend(friendId);
+            await LoadProgrammingLanguagesLookupAsync();
+        }
+
+        private async Task InitializeFriend(int? friendId)
         {
             var friend = friendId.HasValue ? await _friendRepository.GetByIdAsync(friendId.Value) : CreateNewFriend();
 
@@ -63,7 +76,16 @@ namespace FriendOrganizer.UI.ViewModel
             }
         }
 
-
+        private async Task LoadProgrammingLanguagesLookupAsync()
+        {
+            ProgrammingLanguages.Clear();
+            ProgrammingLanguages.Add(new NullLookupItem());
+            var lookup = await _programmingLanguageLookupDataService.GetProgrammingLanguageLookupAsync();
+            foreach (var lookupItem in lookup)
+            {
+                ProgrammingLanguages.Add(lookupItem);
+            }
+        }
 
         public FriendWrapper Friend
         {
