@@ -6,7 +6,7 @@ using FriendOrganizer.Model;
 
 namespace FriendOrganizer.UI.Data.Repositories
 {
-    class FriendRepository : GenericRepository<Friend, FriendOrganizerDbContext>, IFriendRepository
+    public class FriendRepository : GenericRepository<Friend, FriendOrganizerDbContext>, IFriendRepository
     {
 
         private FriendOrganizerDbContext _context;

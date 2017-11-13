@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Autofac.Features.Indexed;
 using FriendOrganizer.Model;
 using FriendOrganizer.UI.Data;
 using FriendOrganizer.UI.Event;
@@ -20,15 +21,16 @@ namespace FriendOrganizer.UI.ViewModel
         private IFriendRepository _friendDataService;
         private IEventAggregator _eventAggrigator;
         private IDetailViewModel _detailViewModel;
-        private Func<IFriendDetailViewModel> _FriendDetailViewModelCreator;
+
         private IMessageDialogService _messageDialogService;
 
+        private IIndex<string, IDetailViewModel> _detailViewModelCreator;
 
-        public MainViewModel(INavigationViewModel navigationViewModel, Func<IFriendDetailViewModel> friendDetailViewModelCreator, IEventAggregator eventAggregator, IMessageDialogService messageDialogService)
+
+        public MainViewModel(INavigationViewModel navigationViewModel, IIndex<string, IDetailViewModel> detailViewModelCreator, IEventAggregator eventAggregator, IMessageDialogService messageDialogService)
         {
             _eventAggrigator = eventAggregator;
-            
-            _FriendDetailViewModelCreator = friendDetailViewModelCreator;
+            _detailViewModelCreator = detailViewModelCreator;
             _messageDialogService = messageDialogService;
             _eventAggrigator.GetEvent<OpenDetailViewEvent>().Subscribe(OnOpenDetailView);
             _eventAggrigator.GetEvent<AfterDetailDeletedEvent>().Subscribe(AfterDetailDeleted);
@@ -72,13 +74,8 @@ namespace FriendOrganizer.UI.ViewModel
                     return;                   
                 }
             }
-            switch (args.ViewModelName)
-            {
-                case nameof(FriendDetailViewModel):
-                    DetailViewModel = _FriendDetailViewModelCreator();
-                    break;
-            }
-            
+
+            DetailViewModel = _detailViewModelCreator[args.ViewModelName];
             await DetailViewModel.LoadAsync(args.Id);
         }
 

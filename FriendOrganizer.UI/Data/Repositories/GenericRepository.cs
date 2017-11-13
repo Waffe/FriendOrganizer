@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace FriendOrganizer.UI.Data.Repositories
 {
-    class GenericRepository<TEntity, TContext>:IGenerticRepository<TEntity> where TEntity :class  where TContext:DbContext
+    public class GenericRepository<TEntity, TContext>:IGenerticRepository<TEntity> where TEntity :class  where TContext:DbContext
     {
         protected readonly TContext Context;
 
