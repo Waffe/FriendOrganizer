@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Threading.Tasks;
 
@@ -24,6 +25,10 @@ namespace FriendOrganizer.UI.Data.Repositories
         public bool HasChanges()
         {
             return Context.ChangeTracker.HasChanges();
+        }
+        public async Task<IEnumerable<TEntity>> GetAllAsync()
+        {
+            return await Context.Set<TEntity>().ToListAsync();
         }
 
         public void Add(TEntity model)
