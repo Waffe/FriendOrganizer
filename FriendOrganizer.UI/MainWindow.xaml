@@ -8,7 +8,7 @@
         xmlns:viewModel ="clr-namespace:FriendOrganizer.UI.ViewModel"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         mc:Ignorable="d"
-        Title="FriendOrganizer" Height="700" Width="1000"
+        Title="FriendOrganizer" Height="850" Width="1000"
         WindowStartupLocation="CenterScreen"
         FontSize="20">
     <Window.Resources>

@@ -40,6 +40,7 @@ namespace FriendOrganizer.DataAccess.Migrations
             context.Meetings.AddOrUpdate(m=>m.Title, new Meeting()
             {
                 Title = "Watching Soccer",
+                Location = "Gothenburg",
                 DateFrom = new DateTime(2018,5,26),
                 DateTo = new DateTime(2018,5,26),
                 Friends = new List<Friend>

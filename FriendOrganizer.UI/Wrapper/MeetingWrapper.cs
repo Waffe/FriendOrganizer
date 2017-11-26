@@ -21,6 +21,12 @@ namespace FriendOrganizer.UI.Wrapper
             set {SetValue(value);}
         }
 
+        public string Location
+        {
+            get { return GetValue<string>(); }
+            set { SetValue(value); }
+        }
+
 
         public DateTime DateFrom
         {

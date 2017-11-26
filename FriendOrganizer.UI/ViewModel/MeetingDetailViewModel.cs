@@ -9,6 +9,7 @@ using FriendOrganizer.Model;
 using FriendOrganizer.UI.Data.Repositories;
 using FriendOrganizer.UI.Event;
 using FriendOrganizer.UI.View.Services;
+using FriendOrganizer.UI.View.Services.WeatherModels;
 using FriendOrganizer.UI.Wrapper;
 using Prism.Commands;
 using Prism.Events;
@@ -21,15 +22,18 @@ namespace FriendOrganizer.UI.ViewModel
         private Friend _selectedAddedFriend;
         private List<Friend> _allFriends;
         private IMeetingRepository _meetingRepository;
+        private IWeatherService _weatherService;
         private MeetingWrapper _meeting;
+        private ConsolidatedWeather _weather;
 
-        
+
 
         public MeetingDetailViewModel(IEventAggregator eventAggregator,
             IMessageDialogService messageDialogService,
-            IMeetingRepository meetingRepository) : base(eventAggregator,messageDialogService)
+            IMeetingRepository meetingRepository, IWeatherService weatherService) : base(eventAggregator,messageDialogService)
         {
             _meetingRepository = meetingRepository;
+            _weatherService = weatherService;
             eventAggregator.GetEvent<AfterDetailSaveEvent>().Subscribe(AfterDetailSaved);
             eventAggregator.GetEvent<AfterDetailDeletedEvent>().Subscribe(AfterDetailDeleted);
 
@@ -37,6 +41,27 @@ namespace FriendOrganizer.UI.ViewModel
             AvailableFriends = new ObservableCollection<Friend>();
             AddFriendCommand = new DelegateCommand(OnAddFriendExecute, OnAddFriendCanExecute);
             RemoveFriendCommand = new DelegateCommand(OnRemoveFriendExecute, OnRemoveFriendCanExecute);
+            
+        }
+
+
+        public ConsolidatedWeather Weather
+        {
+            get => _weather;
+            set
+            {
+                _weather = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private async void UpdateWeather()
+        {
+            ConsolidatedWeather weather = await _weatherService.GetLocationWeatherForDateAsync(Meeting.DateFrom, Meeting.Location);
+            if (weather != null)
+            {
+                Weather = weather;
+            }
         }
 
         private async void AfterDetailDeleted(AfterDetailDeletedEventArgs args)
@@ -66,6 +91,7 @@ namespace FriendOrganizer.UI.ViewModel
             {
                 _meeting = value;
                 OnPropertyChanged();
+                UpdateWeather();
             }
         }
 
@@ -187,7 +213,6 @@ namespace FriendOrganizer.UI.ViewModel
                 {
                     HasChanges = _meetingRepository.HasChanges();
                 }
-
                 if (e.PropertyName == nameof(Meeting.HasErrors))
                 {
                     ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
@@ -195,6 +220,10 @@ namespace FriendOrganizer.UI.ViewModel
                 if (e.PropertyName == nameof(Meeting.Title))
                 {
                     SetTitle();
+                }
+                if (e.PropertyName == nameof(Meeting.DateFrom))
+                {
+                    UpdateWeather();
                 }
             };
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
@@ -204,6 +233,7 @@ namespace FriendOrganizer.UI.ViewModel
                 Meeting.Title = "";
             }
             SetTitle();
+            
         }
 
         private void SetTitle()
