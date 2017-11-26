@@ -1,41 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Formatting;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 using FriendOrganizer.UI.View.Services.WeatherModels;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace FriendOrganizer.UI.View.Services
 {
     public class WeatherService : IWeatherService
     {
-        private static HttpClient httpClient;
+        private static HttpClient _httpClient;
         private const string DemoPurposeWoeid = "890869";
 
         public WeatherService()
         {
-            httpClient= new HttpClient();
-            httpClient.BaseAddress = new Uri("https://www.metaweather.com/api/");
-
-
+            _httpClient = new HttpClient {BaseAddress = new Uri("https://www.metaweather.com/api/")};
         }
 
         internal async Task<string> GetWoeid(string location)
-        {           
+        {
+            if (CheckForInternetConnection())
+            {
+                var response = await _httpClient.GetAsync($"location/search/?query={location}");
+                var responseString = await response.Content.ReadAsStringAsync();
+                var model = JsonConvert.DeserializeObject<ApiLocation[]>(responseString);
 
-            var response = await httpClient.GetAsync($"location/search/?query={location}");
-            var responseString = await response.Content.ReadAsStringAsync();
-            var model = JsonConvert.DeserializeObject<ApiLocation[]>(responseString);
-
-            return model[0].woeid.ToString();
-
-            
+                return model[0].woeid.ToString();
+            }
+            return null;
         }
 
 
@@ -51,43 +44,40 @@ namespace FriendOrganizer.UI.View.Services
 
         public async Task<ConsolidatedWeather> GetLocationWeatherForDateAsync(DateTime date, string location)
         {
-            string woeid = await GetWoeid(location) ?? DemoPurposeWoeid;
+            if (CheckForInternetConnection())
+            {
+                string woeid = await GetWoeid(location) ?? DemoPurposeWoeid;
 
 
-                var response = await httpClient.GetAsync($"location/{woeid}/{date.Year}/{date.Month}/{date.Day}");
+                var response = await _httpClient.GetAsync($"location/{woeid}/{date.Year}/{date.Month}/{date.Day}");
 
 
                 var responseString = await response.Content.ReadAsStringAsync();
                 var listOfModels = JsonConvert.DeserializeObject<ConsolidatedWeather[]>(responseString);
-            if (listOfModels != null && listOfModels.Length !=0)
-            {
+                if (listOfModels == null || listOfModels.Length == 0) return new ConsolidatedWeather();
                 var weatherClosestToDate = listOfModels.OrderBy(x => (x.created - date).Ticks).First();
-
                 return weatherClosestToDate;
             }
+            
             return new ConsolidatedWeather();
 
 
         }
-
-        public async Task<ConsolidatedWeather> GetLocationWeatherForDateAsync(DateTime date)
+        public static bool CheckForInternetConnection()
         {
-            string woeid = DemoPurposeWoeid;
-
-
             try
             {
-                var response = await httpClient.GetAsync($"location/{woeid}/{date.Year}/{date.Month}/{date.Day}");
-
-                var responseString = await response.Content.ReadAsStringAsync();
-                var listOfModels = JsonConvert.DeserializeObject<ConsolidatedWeather[]>(responseString);
-                var weatherClosestToDate = listOfModels.OrderBy(x => (x.created - date).Ticks).First();
-
-                return weatherClosestToDate;
+                using (var client = new WebClient())
+                {
+                    using (client.OpenRead("http://clients3.google.com/generate_204"))
+                    {
+                        return true;
+                    }
+                }
             }
-            catch (Exception)
+            catch
             {
-                return null;
+                return false;
             }
         }
     }

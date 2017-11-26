@@ -57,11 +57,15 @@ namespace FriendOrganizer.UI.ViewModel
 
         private async void UpdateWeather()
         {
-            ConsolidatedWeather weather = await _weatherService.GetLocationWeatherForDateAsync(Meeting.DateFrom, Meeting.Location);
-            if (weather != null)
+            if (Meeting.Location != null)
             {
-                Weather = weather;
+                ConsolidatedWeather weather = await _weatherService.GetLocationWeatherForDateAsync(Meeting.DateFrom, Meeting.Location);
+                if (weather != null)
+                {
+                    Weather = weather;
+                }
             }
+            
         }
 
         private async void AfterDetailDeleted(AfterDetailDeletedEventArgs args)
@@ -231,6 +235,7 @@ namespace FriendOrganizer.UI.ViewModel
             if (Meeting.Id == 0)
             {
                 Meeting.Title = "";
+                Meeting.Location = "";
             }
             SetTitle();
             
