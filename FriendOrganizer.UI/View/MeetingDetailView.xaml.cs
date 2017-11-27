@@ -24,5 +24,6 @@ namespace FriendOrganizer.UI.View
         {
             InitializeComponent();
         }
+
     }
 }

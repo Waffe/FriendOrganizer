@@ -41,7 +41,8 @@ namespace FriendOrganizer.UI.ViewModel
             AvailableFriends = new ObservableCollection<Friend>();
             AddFriendCommand = new DelegateCommand(OnAddFriendExecute, OnAddFriendCanExecute);
             RemoveFriendCommand = new DelegateCommand(OnRemoveFriendExecute, OnRemoveFriendCanExecute);
-            
+            UpdateCommand = new DelegateCommand(UpdateWeather);
+
         }
 
 
@@ -106,6 +107,8 @@ namespace FriendOrganizer.UI.ViewModel
         public ICommand AddFriendCommand { get; }
 
         public ICommand RemoveFriendCommand { get; }
+
+        public ICommand UpdateCommand { get; }
 
         private string _title;
 

@@ -75,16 +75,16 @@
             </StackPanel>
             
             <StackPanel Grid.Column="1" Orientation="Vertical">
-                <Label Content="{Binding Meeting.DateFrom, StringFormat=dd-MM-yyyy}"/>
+                <Label Content="{Binding Meeting.DateFrom, StringFormat=yyyy-MM-dd}"/>
                 <Label Content="Weather Forecast:"/>
                 <Label Content="Wind Direction:"/>
                 <Label Content="Temperature in ℃:"/>
             </StackPanel>
             <StackPanel Grid.Column="2" Orientation="Vertical">
-                <Label Content="" />
+                <Button Width="100" Content="&#x21bb;" Command="{Binding UpdateCommand}"/>
                 <Label Content="{Binding Weather.weather_state_name}" />
                 <Label Content="{Binding Weather.wind_direction_compass}" />
-                <Label Content="{Binding Weather.the_temp, StringFormat=Reserved (Equity Share: \{0\}%)}" />
+                <Label Content="{Binding Weather.the_temp}" />
             </StackPanel>
         </Grid>
         
